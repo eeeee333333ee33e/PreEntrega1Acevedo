@@ -16,7 +16,6 @@ function iniciaCalculadora() {
     var mTot = 0;
     while (chkNull(iNom)) {
         iNom = prompt("Bienvenido al Consejo, por favor, ingrese su nombre para asesorarlo mejor.")
-        console.log("mgBox")
     }
 
     while ((iTip != "P") && (iTip != "RD")) {
