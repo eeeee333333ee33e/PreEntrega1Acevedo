@@ -8,12 +8,19 @@ const mSsociales = 15000;
 const mSsocialesFam = 17000;
 const mCps = 10000;
 const mTxtSsOblig = "(Afiliación obligatoria por matricula plena) ";
+const valores = {dep:mDerProf, depRd:mDerProfRd, ssociales: mSsociales, ssocialesFam : 17000, cps: 10000 };
+
+function buscoValorObjetoSimpleNumerico(objeto, clave){
+    return parseInt(objeto[clave]);
+}
 
 function iniciaCalculadora() {
     var iNom = undefined;
     var iTip = undefined;
     var iSsocOpc = undefined;
     var mTot = 0;
+    //ahora, sumamos en un objeto.
+    var mResumen = [];
     while (chkNull(iNom)) {
         iNom = prompt("Bienvenido al Consejo, por favor, ingrese su nombre para asesorarlo mejor.")
     }
@@ -21,28 +28,46 @@ function iniciaCalculadora() {
     while ((iTip != "P") && (iTip != "RD")) {
         iTip = prompt("Muchas gracias " + iNom + ", por favor, ahora ingrese las letras P si desea una matricula plena, o RD si desea una matricula en relación de dependencia. Debe escribirlas en mayusculas.")
     }
-
+    let mVal = 0;
     switch (iTip) {
+        
         case "P":
             //sumo derecho prof pleno
-            mTot = mTot + mDerProf;
+            mVal = buscoValorObjetoSimpleNumerico(valores, "dep");
+            mResumen.push({"Derecho por Ejercicio Profesional": mVal});
+            mVal = 0;
             //sumo la obra social obligatoria
-            mTot = mTot + mSsociales;
+            mVal = buscoValorObjetoSimpleNumerico(valores, "ssociales");
+            mResumen.push({"Cuota Servicios Sociales": mVal});
+            mVal = 0;
             //vamos a la rutina que nos calcula servicios sociales... para los familiares..
-            mTot = mTot + calculadoraServiciosSociales(true);
+            mVal = calculadoraServiciosSociales(true);
+            if (mVal > 0) {
+                mResumen.push({"Complemento S. Sociales - Familiares": mVal});    
+            }
+            mVal = 0
             //finalmente, sumamos la caja, que tambien es obligatoria
-            mTot = mTot + mCps;
-            alert("Se sumaron $" + mCps + ", en concepto de la CPS, que es obligatoria por ser plena la matricula.")
+            mVal = buscoValorObjetoSimpleNumerico(valores, "cps");
+            mResumen.push({"Aportes Caja de Prev. Social PCEC": mVal});    
+            alert("Se sumaron $" + buscoValorObjetoSimpleNumerico(valores, "cps") + ", en concepto de la CPS, que es obligatoria por ser plena la matricula.")
             break;
 
         case "RD":
-            mTot = mTot + mDerProfRd;
+            mVal = buscoValorObjetoSimpleNumerico(valores, "depRd");
+            mResumen.push({"Derecho por Ej. Prof. - Rel. de Dependencia": mVal});
+            mVal = 0;
 
             iSsocOpc = prompt("Sr. Profesional, lo invitamos a afiliarse a Servicios Sociales, escriba NO para no afiliarse. Debe estar en mayúsculas, caso contrario lo afiliaremos!.");
 
             if (iSsocOpc != "NO") {
-                mTot = mTot + mSsociales;
-                mTot = mTot + calculadoraServiciosSociales(false);
+                mVal = buscoValorObjetoSimpleNumerico(valores, "ssociales");
+                mResumen.push({"Cuota Servicios Sociales": mVal});
+                mVal = 0;
+                mVal = calculadoraServiciosSociales(false);
+                if (mVal > 0) {
+                    mResumen.push({"Complemento S. Sociales - Familiares": mVal});
+                }
+                
             }
             alert("Ud. Esta exento de la CPS por ser matriculado en Relación de Dependencia. Disfrute el ahorro, y no tener jubilación (igual no le ibamos a pagar tanto).");
 
@@ -53,7 +78,7 @@ function iniciaCalculadora() {
             break;
             
     }
-    presentoMontos(iNom, mTot);
+    presentoMontos(iNom, mResumen);
 }
 
 
@@ -67,16 +92,16 @@ function calculadoraServiciosSociales(mSsOblig = false) {
     //aca no uso chknull por que pueden responder 0...
 
     while (true) {
-        iFamiliares = parseInt(prompt("Su monto de Servicios Sociales " + txtExtra + "es de: $ " + mSsociales + ", si desea sumar familiares opcionales, escriba la cantidad, caso contrario, escriba el numero 0 (cero)."));
+        iFamiliares = parseInt(prompt("Su monto de Servicios Sociales " + txtExtra + "es de: $ " + buscoValorObjetoSimpleNumerico(valores, "ssociales") + ", si desea sumar familiares opcionales, escriba la cantidad, caso contrario, escriba el numero 0 (cero)."));
         if (!isNaN(iFamiliares) && iFamiliares >= 0) {
             break;
         }
     }
-    return montoOptSsociales(iFamiliares);
+    return parseInt(montoOptSsociales(iFamiliares));
 }
 
 function montoOptSsociales(qFamiliares = 0) {
-    return qFamiliares * mSsocialesFam;
+    return qFamiliares * buscoValorObjetoSimpleNumerico(valores, "ssocialesFam");
 }
 function chkNull(value) {
     if (value === undefined) {
@@ -95,7 +120,17 @@ function chkNull(value) {
     return false;
 }
 
-function presentoMontos(iNom, mTot) {
-    alert("Estimado profesional: " + iNom + " , le informamos que debera abonar para el Consejo y la Caja : $ " + mTot + ". Muchas gracias por usar nuestra web.");
+function presentoMontos(iNom, mResumen) {
+    var total = 0;
+    var txtAlert = "Estimado profesional - "+iNom+": le acercamos como se conformará su cedulón de pago:\n";
+    mResumen.forEach(item => {
+        Object.entries(item).forEach(([clave, valor]) => {
+            txtAlert += "$ " + valor + " - " + clave + ".- \n";
+            total = total + valor;
+        });
+    });
+    txtAlert += "==================\n";
+    txtAlert += "Total: $ " + total + ".- Gracias por usar nuestra calculadora";
+    alert(txtAlert);
     return;
 }
