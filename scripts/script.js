@@ -15,13 +15,16 @@ $(document).ready(function () {
 
 fetch('https://cpcecba.org.ar/servicios/val.json')
     .then(response => {
-        
+      
         return response.json();
     })
     .then(data => {
-        valores.push(...data);
-        presentoMontos(valores);
+        
+        
+        valores = data; 
     })
+  
+    
 
 
 function buscoValorObjetoSimpleNumerico(objeto, clave) {
