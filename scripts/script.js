@@ -13,6 +13,8 @@ $(document).ready(function () {
     });
 });
 
+
+const mTxtSsOblig = " - Obligatorio por ser matricula plena";
 fetch('https://cpcecba.org.ar/servicios/val.json')
     .then(response => {
       
